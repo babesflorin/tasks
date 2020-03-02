@@ -1,0 +1,28 @@
+
+version: "3.3"
+services:
+  webserver:
+    build:
+      context: ./
+      dockerfile: docker/nginx/Dockerfile
+    volumes:
+      - ./:/var/www/task-list
+    ports:
+      - "${WEBSERVER_PORT}:80"
+    depends_on:
+      - php-fpm
+  php-fpm:
+    build:
+      context: ./
+      dockerfile: docker/php-fpm/Dockerfile
+    depends_on:
+      - mysql
+    volumes:
+      - ./:/var/www/task-list
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./db-data:/var/lib/mysql
