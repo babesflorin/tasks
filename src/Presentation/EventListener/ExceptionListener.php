@@ -22,7 +22,7 @@ class ExceptionListener
             $statusCode = Response::HTTP_BAD_REQUEST;
         }
         $response = new JsonResponse($responseArray, $statusCode);
-echo $exception;die;
+
         // sends the modified response object to the event
         $event->setResponse($response);
     }
