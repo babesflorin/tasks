@@ -10,9 +10,11 @@ use League\Fractal\Resource\Item;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
+use Swagger\Annotations as SWG;
 
 /**
- * @Route("/task")
+ * @Route("/api/task")
+ * @SWG\Tag(name="tasks")
  */
 class TaskController extends AbstractController
 {
@@ -48,9 +50,57 @@ class TaskController extends AbstractController
      *          "_format" : "application/json"
      *      }
      * )
+     * @SWG\Post(
+     *      @SWG\Parameter(
+     *          name="body",
+     *          in="body",
+     *          format="application/json",
+     *          @SWG\Schema(ref="#/definitions/TaskRequest")
+     *      ),
+     *      @SWG\Response(
+     *          response=200,
+     *          description="Returns added task",
+     *          @SWG\Schema(ref="#/definitions/TaskResponse")
+     *      )
+     * )
      * @ParamConverter("task", class=TaskDto::class)
      */
-    public function index(TaskDto $task)
+    public function addTask(TaskDto $task)
+    {
+        $taskDto = $this->service->addTask($task);
+        $resource = new Item($taskDto, $this->taskTransformer);
+
+        return $this->json(
+            $this->fractal->createData($resource)->toArray()
+        );
+    }
+
+    /**
+     * @Route(
+     *     "",
+     *     name="task_add",
+     *     methods={"POST"},
+     *     format="application/json",
+     *     requirements={
+     *          "_format" : "application/json"
+     *      }
+     * )
+     * @SWG\Post(
+     *      @SWG\Parameter(
+     *          name="body",
+     *          in="body",
+     *          format="application/json",
+     *          @SWG\Schema(ref="#/definitions/TaskRequest")
+     *      ),
+     *      @SWG\Response(
+     *          response=200,
+     *          description="Returns added task",
+     *          @SWG\Schema(ref="#/definitions/TaskResponse")
+     *      )
+     * )
+     * @ParamConverter("task", class=TaskDto::class)
+     */
+    public function getTasks()
     {
         $taskDto = $this->service->addTask($task);
         $resource = new Item($taskDto, $this->taskTransformer);

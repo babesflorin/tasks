@@ -1,0 +1,38 @@
+nelmio_api_doc:
+    documentation:
+        info:
+            title: My App
+            description: This is an awesome app!
+            version: 1.0.0
+        definitions:
+            TaskRequest:
+                type: object
+                required:
+                  - name
+                  - description
+                  - when
+                properties:
+                  name:
+                      type: string
+                  description:
+                      type: string
+                  when:
+                      type: string
+                      example: "2020-01-30"
+            TaskResponse:
+              allOf:
+                - $ref: '#/definitions/TaskRequest'
+                - type: object
+                  properties:
+                    done:
+                      type: boolean
+                    created_at:
+                      type: string
+                      format: date-time
+                    updated_at:
+                      type: string
+                      format: date-time
+
+    areas: # to filter documented areas
+        path_patterns:
+            - ^/api(?!/doc$) # Accepts routes under /api except /api/doc

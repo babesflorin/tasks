@@ -43,4 +43,9 @@ class TaskService
 
         return $this->dtoToEntityTransfomer->reverseTransform($task);
     }
+
+    public function getAllTasks()
+    {
+
+    }
 }
