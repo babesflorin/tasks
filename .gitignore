@@ -189,3 +189,9 @@ fabric.properties
 /web/js/
 
 # End of https://www.gitignore.io/api/macos,dotenv,symfony,composer,phpstorm
+###> symfony/phpunit-bridge ###
+.phpunit
+.phpunit.result.cache
+/phpunit.xml
+coverage-result
+###< symfony/phpunit-bridge ###

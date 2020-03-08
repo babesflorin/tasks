@@ -21,6 +21,8 @@ services:
       - ./:/var/www/task-list
   mysql:
     image: mysql:5.7
+    ports:
+      - "${DB_PORT}:3306"
     environment:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
