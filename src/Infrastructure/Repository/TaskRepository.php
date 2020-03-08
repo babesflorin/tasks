@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Repository;
 
 use App\Domain\Entity\Task;
+use App\Domain\Entity\TaskCollection;
 use App\Domain\Repository\TaskRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
@@ -26,5 +27,12 @@ class TaskRepository implements TaskRepositoryInterface
         $this->entityManager->flush();
 
         return $task;
+    }
+
+    public function getTasks(): TaskCollection
+    {
+        $tasks = $this->repository->findAll();
+
+        return new TaskCollection($tasks);
     }
 }

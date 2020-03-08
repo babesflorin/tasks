@@ -2,9 +2,11 @@
 
 namespace App\Domain\Service;
 
+use App\Domain\Dto\TaskCollectionDto;
 use App\Domain\Dto\TaskDto;
 use App\Domain\Exception\InvalidTaskException;
 use App\Domain\Repository\TaskRepositoryInterface;
+use App\Domain\Transformer\TaskCollectionDtoToCollectionTransformer;
 use App\Domain\Transformer\TaskDtoToEntityTransformer;
 use App\Domain\Validator\TaskValidator;
 
@@ -21,16 +23,22 @@ class TaskService
     /**
      * @var TaskDtoToEntityTransformer
      */
-    private $dtoToEntityTransfomer;
+    private $dtoTransformer;
+    /**
+     * @var TaskCollectionDtoToCollectionTransformer
+     */
+    private $dtoCollectionTransformer;
 
     public function __construct(
         TaskRepositoryInterface $repository,
         TaskValidator $validator,
-        TaskDtoToEntityTransformer $dtoToEntityTransfomer
+        TaskDtoToEntityTransformer $dtoTransformer,
+        TaskCollectionDtoToCollectionTransformer $dtoCollectionTransformer
     ) {
         $this->repository = $repository;
         $this->validator = $validator;
-        $this->dtoToEntityTransfomer = $dtoToEntityTransfomer;
+        $this->dtoTransformer = $dtoTransformer;
+        $this->dtoCollectionTransformer = $dtoCollectionTransformer;
     }
 
     /**
@@ -39,13 +47,15 @@ class TaskService
     public function addTask(TaskDto $taskDto): TaskDto
     {
         $this->validator->validate($taskDto);
-        $task = $this->repository->saveTask($this->dtoToEntityTransfomer->transform($taskDto));
+        $task = $this->repository->saveTask($this->dtoTransformer->transform($taskDto));
 
-        return $this->dtoToEntityTransfomer->reverseTransform($task);
+        return $this->dtoTransformer->reverseTransform($task);
     }
 
-    public function getAllTasks()
+    public function getAllTasks(): TaskCollectionDto
     {
+        $tasks = $this->repository->getTasks();
 
+        return $this->dtoCollectionTransformer->reverseTransform($tasks);
     }
 }
