@@ -54,8 +54,6 @@ class TaskService
 
     public function getAllTasks(): TaskCollectionDto
     {
-        $tasks = $this->repository->getTasks();
-
-        return $this->dtoCollectionTransformer->reverseTransform($tasks);
+        return $this->dtoCollectionTransformer->reverseTransform($this->repository->getTasks());
     }
 }
