@@ -32,11 +32,11 @@ then
     ./vendor/bin/phpcs --standard=PSR2 --encoding=utf-8 -n -p $FILES
     if [ $? != 0 ]
     then
-        echo "Fix the error before commit!"
+        echo "You have code format errors!"
         echo "Run"
         echo "  ./vendor/bin/phpcbf $FILES"
         echo "for automatic fix or fix it manually."
-        exit 1
+        exit 0
     fi
 fi
 
