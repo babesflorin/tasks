@@ -195,3 +195,8 @@ fabric.properties
 /phpunit.xml
 coverage-result
 ###< symfony/phpunit-bridge ###
+
+###> squizlabs/php_codesniffer ###
+/.phpcs-cache
+/phpcs.xml
+###< squizlabs/php_codesniffer ###
