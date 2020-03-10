@@ -26,6 +26,7 @@
             <directory suffix=".php">src</directory>
             <exclude>
                 <directory suffix=".php">src/Infrastructure/Migrations</directory>
+                <file>src/Domain/Dto/TaskCollectionDto.php</file>
             </exclude>
         </whitelist>
     </filter>
