@@ -58,7 +58,7 @@ class Task
     public function completeTask(): self
     {
         $this->done = true;
-
+        $this->updateTimestamps();
         return $this;
     }
 

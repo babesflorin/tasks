@@ -88,7 +88,7 @@ class TaskController extends AbstractController
      *          "_format" : "application/json"
      *      }
      * )
-     *  @SWG\Response(
+     * @SWG\Response(
      *     response=200,
      *     description="Returns the rewards of an user",
      *     @SWG\Schema(
@@ -105,5 +105,9 @@ class TaskController extends AbstractController
         return $this->json(
             $this->fractal->createData($resource)->toArray()
         );
+    }
+
+    public function completeTask(int $taskId)
+    {
     }
 }
