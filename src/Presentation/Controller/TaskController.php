@@ -90,7 +90,7 @@ class TaskController extends AbstractController
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Returns the rewards of an user",
+     *     description="Returns the tasks",
      *     @SWG\Schema(
      *         type="array",
      *         @SWG\Items(ref="#/definitions/TaskResponse")
