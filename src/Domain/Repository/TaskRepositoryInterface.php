@@ -10,4 +10,6 @@ interface TaskRepositoryInterface
     public function saveTask(Task $task): Task;
 
     public function getTasks(): TaskCollection;
+
+    public function findTaskById(int $taskId): ?Task;
 }
