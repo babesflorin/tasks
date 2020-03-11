@@ -107,7 +107,32 @@ class TaskController extends AbstractController
         );
     }
 
+    /**
+     * @Route(
+     *     "/{taskId}/complete",
+     *     name="task_complete",
+     *     methods={"PUT"},
+     *     format="application/json",
+     *     requirements={
+     *          "_format" : "application/json"
+     *      }
+     * )
+     * @SWG\Put(
+     *      @SWG\Parameter(parameter="taskId", name="taskId", type="integer", in="path"),
+     *      @SWG\Response(
+     *          response=200,
+     *          description="Returns the completed task",
+     *          @SWG\Schema(ref="#/definitions/TaskResponse")
+     *      )
+     * )
+     */
     public function completeTask(int $taskId)
     {
+        $taskDto = $this->service->completeTask($taskId);
+        $resource = new Item($taskDto, $this->taskTransformer);
+
+        return $this->json(
+            $this->fractal->createData($resource)->toArray()
+        );
     }
 }

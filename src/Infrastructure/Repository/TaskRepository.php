@@ -35,4 +35,9 @@ class TaskRepository implements TaskRepositoryInterface
 
         return new TaskCollection($tasks);
     }
+
+    public function findTaskById(int $taskId): ?Task
+    {
+        return $this->repository->find($taskId);
+    }
 }

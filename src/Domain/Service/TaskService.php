@@ -5,6 +5,7 @@ namespace App\Domain\Service;
 use App\Domain\Dto\TaskCollectionDto;
 use App\Domain\Dto\TaskDto;
 use App\Domain\Exception\InvalidTaskException;
+use App\Domain\Exception\TaskNotFoundException;
 use App\Domain\Repository\TaskRepositoryInterface;
 use App\Domain\Transformer\TaskCollectionDtoToCollectionTransformer;
 use App\Domain\Transformer\TaskDtoToEntityTransformer;
@@ -55,5 +56,16 @@ class TaskService
     public function getAllTasks(): TaskCollectionDto
     {
         return $this->dtoCollectionTransformer->reverseTransform($this->repository->getTasks());
+    }
+
+    public function completeTask(int $taskId): TaskDto
+    {
+        $task = $this->repository->findTaskById($taskId);
+        if (null === $task) {
+            throw new TaskNotFoundException("Task not found!");
+        }
+        $task->complete();
+        $this->repository->saveTask($task);
+        return $this->dtoTransformer->reverseTransform($task);
     }
 }
