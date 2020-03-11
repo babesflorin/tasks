@@ -135,4 +135,68 @@ class TaskController extends AbstractController
             $this->fractal->createData($resource)->toArray()
         );
     }
+
+    /**
+     * @Route(
+     *     "",
+     *     name="task_update",
+     *     methods={"PUT"},
+     *     format="application/json",
+     *     requirements={
+     *          "_format" : "application/json"
+     *      }
+     * )
+     * @SWG\Put(
+     *      @SWG\Parameter(
+     *          name="body",
+     *          in="body",
+     *          format="application/json",
+     *          @SWG\Schema(ref="#/definitions/TaskUpdateRequest")
+     *      ),
+     *      @SWG\Response(
+     *          response=200,
+     *          description="Returns added task",
+     *          @SWG\Schema(ref="#/definitions/TaskResponse")
+     *      )
+     * )
+     * @ParamConverter("task", class=TaskDto::class)
+     */
+    public function updateTask(TaskDto $task)
+    {
+        $taskDto = $this->service->updateTask($task);
+        $resource = new Item($taskDto, $this->taskTransformer);
+
+        return $this->json(
+            $this->fractal->createData($resource)->toArray()
+        );
+    }
+
+    /**
+     * @Route(
+     *     "/{taskId}",
+     *     name="get_task",
+     *     methods={"GET"},
+     *     format="application/json",
+     *     requirements={
+     *          "_format" : "application/json"
+     *      }
+     * )
+     * @SWG\Get(
+     *      @SWG\Parameter(parameter="taskId", name="taskId", type="integer", in="path"),
+     *      @SWG\Response(
+     *          response=200,
+     *          description="Returns the task with id",
+     *          @SWG\Schema(ref="#/definitions/TaskResponse")
+     *      )
+     * )
+     */
+    public function getTask(int $taskId)
+    {
+        $taskDto = $this->service->getTask($taskId);
+        $resource = new Item($taskDto, $this->taskTransformer);
+
+        return $this->json(
+            $this->fractal->createData($resource)->toArray()
+        );
+    }
 }

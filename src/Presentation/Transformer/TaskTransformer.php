@@ -10,6 +10,7 @@ class TaskTransformer extends TransformerAbstract
     public function transform(TaskDto $taskDto)
     {
         return [
+            'id' => $taskDto->id,
             'name' => $taskDto->name,
             'description' => $taskDto->description,
             'when' => $taskDto->when,
