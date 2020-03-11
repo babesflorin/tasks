@@ -26,7 +26,7 @@ class TaskDtoToEntityTransfomerTest extends TestCase
         $taskDto->name = "test";
         $taskDto->description = "test";
         $time = new \DateTime();
-        $time->setTime(0,0,0);
+        $time->setTime(0, 0, 0);
         $taskDto->when = $time->format('Y-m-d');
 
         $expectedEntity = new Task($taskDto->name, $taskDto->description, $time);
