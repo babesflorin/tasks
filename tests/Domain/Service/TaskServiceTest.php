@@ -28,7 +28,7 @@ class TaskServiceTest extends TestCase
         parent::setUp();
         $this->repositoryMock = $this->getMock(
             TaskRepositoryInterface::class,
-            ['saveTask', 'getTasks']
+            ['saveTask', 'getTasks', 'findTaskById']
         );
         $this->validatorMock = $this->getMock(TaskValidator::class, ['validate']);
         $this->transformerMock = $this->getMock(TaskDtoToEntityTransformer::class, ['transform', 'reverseTransform']);
