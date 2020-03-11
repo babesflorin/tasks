@@ -30,7 +30,10 @@ class TaskDtoToEntityTransfomerTest extends TestCase
         $taskDto->when = $time->format('Y-m-d');
 
         $expectedEntity = new Task($taskDto->name, $taskDto->description, $time);
-        $this->assertEquals($expectedEntity, $this->transformer->transform($taskDto));
+        $transformedDto = $this->transformer->transform($taskDto);
+        $this->assertEquals($expectedEntity->getName(), $transformedDto->getName());
+        $this->assertEquals($expectedEntity->getDescription(), $transformedDto->getDescription());
+        $this->assertEquals($expectedEntity->getWhen(), $transformedDto->getWhen());
     }
 
     public function testReverseTransform()
@@ -42,6 +45,8 @@ class TaskDtoToEntityTransfomerTest extends TestCase
         $expectedDto->when = $time->format('Y-m-d');
         $expectedDto->done = false;
         $entity = new Task($expectedDto->name, $expectedDto->description, $time);
+        $expectedDto->createdAt = $entity->getCreatedAt();
+        $expectedDto->updatedAt = $entity->getUpdateAt();
         $this->assertEquals($expectedDto, $this->transformer->reverseTransform($entity));
     }
 }
