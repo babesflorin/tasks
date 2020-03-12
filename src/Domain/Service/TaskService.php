@@ -66,6 +66,30 @@ class TaskService
         }
         $task->complete();
         $this->repository->saveTask($task);
+
+        return $this->dtoTransformer->reverseTransform($task);
+    }
+
+    /**
+     * @throws InvalidTaskException
+     */
+    public function updateTask(TaskDto $taskDto)
+    {
+        $this->validator->validate($taskDto, true);
+        $task = $this->repository->findTaskById($taskDto->id);
+        $task = $this->dtoTransformer->transform($taskDto, $task);
+        $this->repository->saveTask($task);
+
+        return $this->dtoTransformer->reverseTransform($task);
+    }
+
+    public function getTask(int $taskId)
+    {
+        $task = $this->repository->findTaskById($taskId);
+        if (null === $task) {
+            throw new TaskNotFoundException("Task not found!");
+        }
+
         return $this->dtoTransformer->reverseTransform($task);
     }
 }

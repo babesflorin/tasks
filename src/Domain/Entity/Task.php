@@ -20,9 +20,7 @@ class Task
 
     public function __construct(string $name, string $description, \DateTimeInterface $when)
     {
-        $this->name = $name;
-        $this->description = $description;
-        $this->when = $when;
+        $this->updateFromRaw($name, $description, $when);
     }
 
     public function getCreatedAt(): ?\DateTime
@@ -59,6 +57,7 @@ class Task
     {
         $this->done = true;
         $this->updateTimestamps();
+
         return $this;
     }
 
@@ -73,5 +72,19 @@ class Task
             $this->createdAt = new \DateTime();
         }
         $this->updatedAt = new \DateTime();
+    }
+
+    public function updateFromRaw(?string $name, ?string $description, ?\DateTimeInterface $when)
+    {
+        if (null !== $name) {
+            $this->name = $name;
+        }
+        if (null !== $description) {
+            $this->description = $description;
+        }
+        if (null !== $when) {
+            $this->when = $when;
+        }
+        $this->updateTimestamps();
     }
 }

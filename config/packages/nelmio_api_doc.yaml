@@ -32,6 +32,13 @@ nelmio_api_doc:
                     updated_at:
                       type: string
                       format: date-time
+            TaskUpdateRequest:
+              allOf:
+                - type: object
+                  properties:
+                    id:
+                      type: integer
+                - $ref: '#/definitions/TaskRequest'
 
     areas: # to filter documented areas
         path_patterns:
