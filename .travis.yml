@@ -1,6 +1,6 @@
 language: php
 php:
-  - 7.1.9
+  - 7.4
 before_install:
   - composer require --dev rregeer/phpunit-coverage-check
 script:
