@@ -4,5 +4,5 @@ php:
 before_install:
   - composer require --dev rregeer/phpunit-coverage-check
 script:
-  - php bin/phpunit --coverage-clover clover.xml
+  - phpunit -c phpunit.xml.dist
   - ./vendor/bin/coverage-check clover.xml 99
