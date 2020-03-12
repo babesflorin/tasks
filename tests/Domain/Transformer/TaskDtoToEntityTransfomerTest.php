@@ -14,7 +14,7 @@ class TaskDtoToEntityTransfomerTest extends TestCase
      */
     private $transformer;
 
-    protected function setUp():void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->transformer = new TaskDtoToEntityTransformer();
@@ -31,6 +31,23 @@ class TaskDtoToEntityTransfomerTest extends TestCase
 
         $expectedEntity = new Task($taskDto->name, $taskDto->description, $time);
         $transformedDto = $this->transformer->transform($taskDto);
+        $this->assertEquals($expectedEntity->getName(), $transformedDto->getName());
+        $this->assertEquals($expectedEntity->getDescription(), $transformedDto->getDescription());
+        $this->assertEquals($expectedEntity->getWhen(), $transformedDto->getWhen());
+    }
+
+    public function testTransformExistingEntity()
+    {
+        $taskDto = new TaskDto();
+        $taskDto->name = "test";
+        $taskDto->description = "test";
+        $time = new \DateTime();
+        $time->setTime(0, 0, 0);
+        $taskDto->when = $time->format('Y-m-d');
+
+        $entityToUpdate = new Task("not the dto name", "not the dto description", $time);
+        $expectedEntity = new Task($taskDto->name, $taskDto->description, $time);
+        $transformedDto = $this->transformer->transform($taskDto, $entityToUpdate);
         $this->assertEquals($expectedEntity->getName(), $transformedDto->getName());
         $this->assertEquals($expectedEntity->getDescription(), $transformedDto->getDescription());
         $this->assertEquals($expectedEntity->getWhen(), $transformedDto->getWhen());

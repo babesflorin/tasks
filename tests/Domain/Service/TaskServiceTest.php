@@ -6,6 +6,7 @@ use App\Domain\Dto\TaskCollectionDto;
 use App\Domain\Dto\TaskDto;
 use App\Domain\Entity\Task;
 use App\Domain\Entity\TaskCollection;
+use App\Domain\Exception\TaskNotFoundException;
 use App\Domain\Repository\TaskRepositoryInterface;
 use App\Domain\Service\TaskService;
 use App\Domain\Transformer\TaskCollectionDtoToCollectionTransformer;
@@ -22,6 +23,7 @@ class TaskServiceTest extends TestCase
     private $transformerMock;
 
     private $collectionTransformerMock;
+    private $taskService;
 
     protected function setUp(): void
     {
@@ -36,6 +38,12 @@ class TaskServiceTest extends TestCase
             TaskCollectionDtoToCollectionTransformer::class,
             ['transform', 'reverseTransform']
         );
+        $this->taskService = new TaskService(
+            $this->repositoryMock,
+            $this->validatorMock,
+            $this->transformerMock,
+            $this->collectionTransformerMock
+        );
     }
 
     public function testAddTask()
@@ -47,14 +55,8 @@ class TaskServiceTest extends TestCase
         $this->transformerMock->expects(self::once())->method('transform')->with($taskDto)->willReturn($taskMock);
         $this->transformerMock->expects(self::once())->method('reverseTransform')->with($taskMock)->willReturn(
             $taskDto
-        );
-        $service = new TaskService(
-            $this->repositoryMock,
-            $this->validatorMock,
-            $this->transformerMock,
-            $this->collectionTransformerMock
-        );
-        $this->assertSame($taskDto, $service->addTask($taskDto));
+        );;
+        $this->assertSame($taskDto, $this->taskService->addTask($taskDto));
     }
 
     public function testGetAllTasks()
@@ -62,16 +64,67 @@ class TaskServiceTest extends TestCase
         $taskCollection = new TaskCollection();
         $taskCollectionDto = new TaskCollectionDto();
         $this->repositoryMock->expects(self::once())->method('getTasks')->willReturn($taskCollection);
-        $this->collectionTransformerMock->expects(self::once())->method('reverseTransform')->with($taskCollection)->willReturn(
-            $taskCollectionDto
-        );
-        $service = new TaskService(
-            $this->repositoryMock,
-            $this->validatorMock,
-            $this->transformerMock,
-            $this->collectionTransformerMock
-        );
+        $this->collectionTransformerMock->expects(self::once())
+                                        ->method('reverseTransform')
+                                        ->with($taskCollection)
+                                        ->willReturn(
+                                            $taskCollectionDto
+                                        );
+        $this->assertSame($taskCollectionDto, $this->taskService->getAllTasks());
+    }
 
-        $this->assertSame($taskCollectionDto, $service->getAllTasks());
+    public function testCompleteTask()
+    {
+        $taskId = 1;
+        $taskMock = $this->getMock(Task::class, ['complete']);
+        $taskMock->expects(self::once())->method('complete');
+        $this->repositoryMock->expects(self::once())->method('findTaskById')->with($taskId)->willReturn($taskMock);
+        $this->repositoryMock->expects(self::once())->method('saveTask')->with($taskMock);
+        $taskDto = new TaskDto();
+        $this->transformerMock->expects(self::once())->method('reverseTransform')->with($taskMock)->willReturn(
+            $taskDto
+        );
+        $this->assertSame($taskDto, $this->taskService->completeTask($taskId));
+    }
+
+    public function testCompleteTaskNotFound()
+    {
+        $taskId = 1;
+        $this->repositoryMock->expects(self::once())->method('findTaskById')->with($taskId)->willReturn(null);
+        $this->expectException(TaskNotFoundException::class);
+        $this->taskService->completeTask($taskId);
+    }
+
+    public function testGetTask()
+    {
+        $taskId = 1;
+        $taskMock = $this->getMock(Task::class);
+        $this->repositoryMock->expects(self::once())->method('findTaskById')->with($taskId)->willReturn($taskMock);
+        $taskDto = new TaskDto();
+        $this->transformerMock->expects(self::once())->method('reverseTransform')->with($taskMock)->willReturn(
+            $taskDto
+        );
+        $this->assertSame($taskDto, $this->taskService->getTask($taskId));
+    }
+
+    public function testGetTaskNotFound()
+    {
+        $taskId = 1;
+        $this->repositoryMock->expects(self::once())->method('findTaskById')->with($taskId)->willReturn(null);
+        $this->expectException(TaskNotFoundException::class);
+        $this->taskService->getTask($taskId);
+    }
+
+    public function testUpdateTask()
+    {
+        $taskDto = new TaskDto();
+        $taskDto->id = 1;
+        $this->validatorMock->expects(self::once())->method('validate')->with($taskDto);
+        $taskMock = $this->getMock(Task::class);
+        $this->repositoryMock->expects(self::once())->method('findTaskById')->with($taskDto->id)->willReturn($taskMock);
+        $this->repositoryMock->expects(self::once())->method('saveTask')->with($taskMock);
+        $this->transformerMock->expects(self::once())->method('transform')->with($taskDto, $taskMock)->willReturn($taskMock);
+        $this->transformerMock->expects(self::once())->method('reverseTransform')->with($taskMock)->willReturn($taskDto);
+        $this->assertSame($taskDto, $this->taskService->updateTask($taskDto));
     }
 }

@@ -3,6 +3,18 @@ php:
   - 7.4
 before_install:
   - composer require --dev rregeer/phpunit-coverage-check
-script:
-  - phpunit -c phpunit.xml.dist
-  - ./vendor/bin/coverage-check clover.xml 99
+
+jobs:
+  include:
+    - stage: Unit Tests
+      before_script:
+        - composer require --dev rregeer/phpunit-coverage-check
+      script:
+        - phpunit -c phpunit.xml.dist
+        - ./vendor/bin/coverage-check clover.xml 50
+    - stage: CodeSniffer
+      before_script:
+        - composer require squizlabs/php_codesniffer
+      script:
+        - ./vendor/bin/phpcs --standard=PSR2 src/
+        - ./vendor/bin/phpcs --standard=PSR2 tests/
