@@ -11,7 +11,8 @@ abstract class Collection extends \ArrayObject
                 $this->checkType($value);
             }
         } else {
-            throw new \InvalidArgumentException("You must provide an iterable structure!");;
+            throw new \InvalidArgumentException("You must provide an iterable structure!");
+            ;
         }
         parent::__construct(
             $input,
