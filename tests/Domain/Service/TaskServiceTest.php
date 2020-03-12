@@ -23,7 +23,7 @@ class TaskServiceTest extends TestCase
 
     private $collectionTransformerMock;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->repositoryMock = $this->getMock(
