@@ -12,4 +12,6 @@ interface TaskRepositoryInterface
     public function getTasks(): TaskCollection;
 
     public function findTaskById(int $taskId): ?Task;
+
+    public function deleteTask(Task $task): bool;
 }

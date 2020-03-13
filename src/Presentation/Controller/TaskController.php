@@ -211,4 +211,37 @@ class TaskController extends AbstractController
             $this->fractal->createData($resource)->toArray()
         );
     }
+
+    /**
+     * @Route(
+     *     "/{taskId}",
+     *     name="delete_task",
+     *     methods={"DELETE"},
+     *     format="application/json",
+     *     requirements={
+     *          "_format" : "application/json"
+     *      }
+     * )
+     * @SWG\Delete(
+     *      @SWG\Parameter(parameter="taskId", name="taskId", type="integer", in="path"),
+     *      @SWG\Response(
+     *          response=200,
+     *          description="Returns the deleted task",
+     *          @SWG\Schema(ref="#/definitions/TaskResponse")
+     *      ),
+     *      @SWG\Response(
+     *          response=404,
+     *          description="Task not found",
+     *      )
+     * )
+     */
+    public function deleteTask(int $taskId)
+    {
+        $taskDto = $this->service->deleteTask($taskId);
+        $resource = new Item($taskDto, $this->taskTransformer);
+
+        return $this->json(
+            $this->fractal->createData($resource)->toArray()
+        );
+    }
 }

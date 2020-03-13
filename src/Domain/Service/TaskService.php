@@ -4,12 +4,15 @@ namespace App\Domain\Service;
 
 use App\Domain\Dto\TaskCollectionDto;
 use App\Domain\Dto\TaskDto;
+use App\Domain\Exception\CouldNotDeleteException;
 use App\Domain\Exception\InvalidTaskException;
 use App\Domain\Exception\TaskNotFoundException;
 use App\Domain\Repository\TaskRepositoryInterface;
 use App\Domain\Transformer\TaskCollectionDtoToCollectionTransformer;
 use App\Domain\Transformer\TaskDtoToEntityTransformer;
 use App\Domain\Validator\TaskValidator;
+use Doctrine\DBAL\DBALException;
+use Doctrine\Persistence\Mapping\MappingException;
 
 class TaskService
 {
@@ -74,7 +77,7 @@ class TaskService
      * @throws InvalidTaskException
      * @throws TaskNotFoundException
      */
-    public function updateTask(TaskDto $taskDto) : TaskDto
+    public function updateTask(TaskDto $taskDto): TaskDto
     {
         $this->validator->validate($taskDto, true);
         $task = $this->repository->findTaskById($taskDto->id);
@@ -95,5 +98,23 @@ class TaskService
         }
 
         return $this->dtoTransformer->reverseTransform($task);
+    }
+
+    public function deleteTask(int $taskId): TaskDto
+    {
+        $task = $this->repository->findTaskById($taskId);
+        if (null === $task) {
+            throw new TaskNotFoundException("Task not found!");
+        }
+        $taskDto = $this->dtoTransformer->reverseTransform($task);
+        try {
+            if (!$this->repository->deleteTask($task)) {
+                throw new CouldNotDeleteException("Could not delete the task!");
+            }
+        } catch (\Exception $e) {
+            throw new CouldNotDeleteException($e->getMessage());
+        }
+
+        return $taskDto;
     }
 }

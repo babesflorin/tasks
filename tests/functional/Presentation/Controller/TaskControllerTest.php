@@ -264,4 +264,43 @@ class TaskControllerTest extends WebTestCase
         $this->assertEmpty($response['data']);
         $this->assertSame('Task not found!', $response['error']);
     }
+
+    public function testDeleteTask()
+    {
+        $client = $this->createClient();
+        $taskId = 5;
+        $client->request("DELETE", "/api/task/$taskId");
+        $this->assertTrue(
+            $client->getResponse()->headers->contains(
+                'Content-Type',
+                'application/json'
+            )
+        );
+        $this->assertSame(Response::HTTP_OK, $client->getResponse()->getStatusCode());
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertSame(JSON_ERROR_NONE, json_last_error());
+        $this->assertSame(5, $response['data']['id']);
+        $this->assertSame('Task name 4', $response['data']['name']);
+        $this->assertSame('Task description 4', $response['data']['description']);
+        $this->assertSame((new \DateTime())->modify('+4 day')->format('Y-m-d'), $response['data']['when']);
+        $this->assertSame(false, $response['data']['done']);
+    }
+
+    public function testDeleteTaskNotFound()
+    {
+        $client = $this->createClient();
+        $taskId = 9999;
+        $client->request("DELETE", "/api/task/$taskId");
+        $this->assertTrue(
+            $client->getResponse()->headers->contains(
+                'Content-Type',
+                'application/json'
+            )
+        );
+        $this->assertSame(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertSame(JSON_ERROR_NONE, json_last_error());
+        $this->assertEmpty($response['data']);
+        $this->assertSame('Task not found!', $response['error']);
+    }
 }

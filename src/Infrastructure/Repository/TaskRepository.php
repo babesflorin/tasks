@@ -40,4 +40,12 @@ class TaskRepository implements TaskRepositoryInterface
     {
         return $this->repository->find($taskId);
     }
+
+    public function deleteTask(Task $task): bool
+    {
+        $this->entityManager->remove($task);
+        $this->entityManager->flush();
+
+        return null === $task->getId();
+    }
 }
