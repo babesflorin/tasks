@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Tests\Domain\Validator;
+namespace App\Tests\Unit\Domain\Validator;
 
 use App\Domain\Dto\TaskDto;
 use App\Domain\Exception\InvalidTaskException;
 use App\Domain\Validator\TaskValidator;
-use App\Tests\TestCase;
+use App\Tests\Unit\TestCase;
 
 class TaskValidatorTest extends TestCase
 {

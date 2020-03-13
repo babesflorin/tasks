@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Tests\Domain\Entity;
+namespace App\Tests\Unit\Domain\Entity;
 
 use App\Domain\Entity\Task;
-use App\Tests\TestCase;
+use App\Tests\Unit\TestCase;
 
 class TaskTest extends TestCase
 {

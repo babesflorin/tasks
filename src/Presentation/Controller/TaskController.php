@@ -123,6 +123,10 @@ class TaskController extends AbstractController
      *          response=200,
      *          description="Returns the completed task",
      *          @SWG\Schema(ref="#/definitions/TaskResponse")
+     *      ),
+     *      @SWG\Response(
+     *          response=404,
+     *          description="Task not found",
      *      )
      * )
      */
@@ -157,6 +161,10 @@ class TaskController extends AbstractController
      *          response=200,
      *          description="Returns added task",
      *          @SWG\Schema(ref="#/definitions/TaskResponse")
+     *      ),
+     *      @SWG\Response(
+     *          response=404,
+     *          description="Task not found",
      *      )
      * )
      * @ParamConverter("task", class=TaskDto::class)
@@ -187,6 +195,10 @@ class TaskController extends AbstractController
      *          response=200,
      *          description="Returns the task with id",
      *          @SWG\Schema(ref="#/definitions/TaskResponse")
+     *      ),
+     *      @SWG\Response(
+     *          response=404,
+     *          description="Task not found",
      *      )
      * )
      */
