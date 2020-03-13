@@ -8,14 +8,14 @@ jobs:
       before_script:
         - composer require --dev rregeer/phpunit-coverage-check
       script:
-        - phpunit -c phpunit.xml.dist --testsuite --testsuite UnitTests
+        - phpunit -c phpunit.xml.dist --testsuite UnitTests
         - ./vendor/bin/coverage-check clover.xml 50
         -
     - stage: Functional Tests
       before_script:
         - composer require --dev rregeer/phpunit-coverage-check
       script:
-        - phpunit -c phpunit.xml.dist --testsuite --testsuite FunctionalTests
+        - phpunit -c phpunit.xml.dist --testsuite FunctionalTests
         - ./vendor/bin/coverage-check clover.xml 50
 
     - stage: CodeSniffer
