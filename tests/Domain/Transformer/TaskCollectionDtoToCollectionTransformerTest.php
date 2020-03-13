@@ -21,7 +21,7 @@ class TaskCollectionDtoToCollectionTransformerTest extends TestCase
      */
     private $dtoTransformer;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->transformer = $this->getMock(TaskDtoToEntityTransformer::class, ['transform', 'reverseTransform']);
