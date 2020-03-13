@@ -2,10 +2,12 @@
 
 namespace App\Presentation\EventListener;
 
+use App\Domain\Exception\TaskNotFoundException;
 use App\Domain\Exception\ValidationException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ExceptionListener
 {
@@ -20,6 +22,12 @@ class ExceptionListener
         if ($exception instanceof ValidationException) {
             $responseArray['messages'] = $exception->getErrors();
             $statusCode = Response::HTTP_BAD_REQUEST;
+        }
+        if ($exception instanceof TaskNotFoundException) {
+            $statusCode = Response::HTTP_NOT_FOUND;
+        }
+        if ($exception instanceof HttpException) {
+            $statusCode = $exception->getStatusCode();
         }
         $response = new JsonResponse($responseArray, $statusCode);
 

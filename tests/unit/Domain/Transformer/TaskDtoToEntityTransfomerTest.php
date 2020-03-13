@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Tests\Domain\Transformer;
+namespace App\Tests\Unit\Domain\Transformer;
 
 use App\Domain\Dto\TaskDto;
 use App\Domain\Entity\Task;
 use App\Domain\Transformer\TaskDtoToEntityTransformer;
-use App\Tests\TestCase;
+use App\Tests\Unit\TestCase;
 
 class TaskDtoToEntityTransfomerTest extends TestCase
 {

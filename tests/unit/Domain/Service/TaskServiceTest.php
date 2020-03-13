@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Domain\Service;
+namespace App\Tests\Unit\Domain\Service;
 
 use App\Domain\Dto\TaskCollectionDto;
 use App\Domain\Dto\TaskDto;
@@ -12,7 +12,7 @@ use App\Domain\Service\TaskService;
 use App\Domain\Transformer\TaskCollectionDtoToCollectionTransformer;
 use App\Domain\Transformer\TaskDtoToEntityTransformer;
 use App\Domain\Validator\TaskValidator;
-use App\Tests\TestCase;
+use App\Tests\Unit\TestCase;
 
 class TaskServiceTest extends TestCase
 {

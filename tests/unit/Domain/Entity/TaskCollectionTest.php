@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Tests\Domain\Entity;
+namespace App\Tests\Unit\Domain\Entity;
 
 use App\Domain\Dto\TaskCollectionDto;
 use App\Domain\Dto\TaskDto;
 use App\Domain\Entity\Task;
 use App\Domain\Entity\TaskCollection;
-use App\Tests\TestCase;
+use App\Tests\Unit\TestCase;
 
 class TaskCollectionTest extends TestCase
 {
