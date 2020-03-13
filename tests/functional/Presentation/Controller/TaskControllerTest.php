@@ -12,7 +12,7 @@ class TaskControllerTest extends WebTestCase
 {
     use FixturesTrait;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->loadFixtures([TasksFixtures::class]);
