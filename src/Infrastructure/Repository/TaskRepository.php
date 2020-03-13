@@ -29,9 +29,17 @@ class TaskRepository implements TaskRepositoryInterface
         return $task;
     }
 
-    public function getTasks(): TaskCollection
+    public function getTasks(?bool $areDone = null, ?\DateTime $when = null): TaskCollection
     {
-        $tasks = $this->repository->findAll();
+        $criteria =[];
+
+        if (null !== $areDone) {
+            $criteria['done'] = $areDone;
+        }
+        if (null !== $when) {
+            $criteria['when'] = $when->setTime(0, 0, 0);
+        }
+        $tasks = $this->repository->findBy($criteria);
 
         return new TaskCollection($tasks);
     }
