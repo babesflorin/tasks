@@ -117,7 +117,7 @@ class TaskController extends AbstractController
             $areDone = $request->query->getBoolean('areDone');
         }
         if ($request->query->has('when')) {
-            $whenString = $request->query->get('when',"");
+            $whenString = $request->query->get('when', "");
             $when = \DateTime::createFromFormat('Y-m-d', $whenString);
 
             if (!$when) {
