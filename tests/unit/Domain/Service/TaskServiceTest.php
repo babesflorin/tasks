@@ -56,7 +56,8 @@ class TaskServiceTest extends TestCase
         $this->transformerMock->expects(self::once())->method('transform')->with($taskDto)->willReturn($taskMock);
         $this->transformerMock->expects(self::once())->method('reverseTransform')->with($taskMock)->willReturn(
             $taskDto
-        );;
+        );
+        ;
         $this->assertSame($taskDto, $this->taskService->addTask($taskDto));
     }
 
