@@ -56,9 +56,9 @@ class TaskService
         return $this->dtoTransformer->reverseTransform($task);
     }
 
-    public function getAllTasks(): TaskCollectionDto
+    public function getAllTasks(?bool $areDone = null, ?\DateTime $when = null): TaskCollectionDto
     {
-        return $this->dtoCollectionTransformer->reverseTransform($this->repository->getTasks());
+        return $this->dtoCollectionTransformer->reverseTransform($this->repository->getTasks($areDone, $when));
     }
 
     public function completeTask(int $taskId): TaskDto

@@ -12,6 +12,7 @@ use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\Item;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Swagger\Annotations as SWG;
 
@@ -64,6 +65,10 @@ class TaskController extends AbstractController
      *          response=200,
      *          description="Returns added task",
      *          @SWG\Schema(ref="#/definitions/TaskResponse")
+     *      ),
+     *     @SWG\Response(
+     *          response=400,
+     *          description="Returns the validation errors"
      *      )
      * )
      * @ParamConverter("task", class=TaskDto::class)
@@ -88,18 +93,38 @@ class TaskController extends AbstractController
      *          "_format" : "application/json"
      *      }
      * )
+     * @SWG\Parameter(
+     *      name="areDone",
+     *      in="query",
+     *      type="boolean"
+     * )
+     * @SWG\Parameter(
+     *      name="when",
+     *      in="query",
+     *      type="string"
+     * )
      * @SWG\Response(
      *     response=200,
      *     description="Returns the tasks",
-     *     @SWG\Schema(
-     *         type="array",
-     *         @SWG\Items(ref="#/definitions/TaskResponse")
-     *     )
+     *     @SWG\Schema(ref="#/definitions/MultipleTaskResponse")
      * )
      */
-    public function getTasks()
+    public function getTasks(Request $request)
     {
-        $tasksCollectionDto = $this->service->getAllTasks();
+        $areDone = null;
+        $when = null;
+        if ($request->query->has('areDone')) {
+            $areDone = $request->query->getBoolean('areDone');
+        }
+        if ($request->query->has('when')) {
+            $whenString = $request->query->get('when',"");
+            $when = \DateTime::createFromFormat('Y-m-d', $whenString);
+
+            if (!$when) {
+                throw new \InvalidArgumentException("When is not valid!", 400);
+            }
+        }
+        $tasksCollectionDto = $this->service->getAllTasks($areDone, $when);
         $resource = new Collection($tasksCollectionDto, $this->taskTransformer);
 
         return $this->json(
