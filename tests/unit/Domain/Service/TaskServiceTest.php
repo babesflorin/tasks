@@ -6,6 +6,7 @@ use App\Domain\Dto\TaskCollectionDto;
 use App\Domain\Dto\TaskDto;
 use App\Domain\Entity\Task;
 use App\Domain\Entity\TaskCollection;
+use App\Domain\Exception\CouldNotDeleteException;
 use App\Domain\Exception\TaskNotFoundException;
 use App\Domain\Repository\TaskRepositoryInterface;
 use App\Domain\Service\TaskService;
@@ -30,7 +31,7 @@ class TaskServiceTest extends TestCase
         parent::setUp();
         $this->repositoryMock = $this->getMock(
             TaskRepositoryInterface::class,
-            ['saveTask', 'getTasks', 'findTaskById']
+            ['saveTask', 'getTasks', 'findTaskById', 'deleteTask']
         );
         $this->validatorMock = $this->getMock(TaskValidator::class, ['validate']);
         $this->transformerMock = $this->getMock(TaskDtoToEntityTransformer::class, ['transform', 'reverseTransform']);
@@ -55,8 +56,7 @@ class TaskServiceTest extends TestCase
         $this->transformerMock->expects(self::once())->method('transform')->with($taskDto)->willReturn($taskMock);
         $this->transformerMock->expects(self::once())->method('reverseTransform')->with($taskMock)->willReturn(
             $taskDto
-        );
-        ;
+        );;
         $this->assertSame($taskDto, $this->taskService->addTask($taskDto));
     }
 
@@ -124,8 +124,46 @@ class TaskServiceTest extends TestCase
         $taskMock = $this->getMock(Task::class);
         $this->repositoryMock->expects(self::once())->method('findTaskById')->with($taskDto->id)->willReturn($taskMock);
         $this->repositoryMock->expects(self::once())->method('saveTask')->with($taskMock);
-        $this->transformerMock->expects(self::once())->method('transform')->with($taskDto, $taskMock)->willReturn($taskMock);
-        $this->transformerMock->expects(self::once())->method('reverseTransform')->with($taskMock)->willReturn($taskDto);
+        $this->transformerMock->expects(self::once())->method('transform')->with($taskDto, $taskMock)->willReturn(
+            $taskMock
+        );
+        $this->transformerMock->expects(self::once())->method('reverseTransform')->with($taskMock)->willReturn(
+            $taskDto
+        );
         $this->assertSame($taskDto, $this->taskService->updateTask($taskDto));
+    }
+
+    public function testDeleteTask()
+    {
+        $taskId = 5;
+        $taskMock = $this->getMock(Task::class);
+        $this->repositoryMock->expects(self::once())->method('findTaskById')->with($taskId)->willReturn($taskMock);
+        $this->repositoryMock->expects(self::once())->method('deleteTask')->with($taskMock)->willReturn(true);
+        $taskDto = new TaskDto();
+        $this->transformerMock->expects(self::once())->method('reverseTransform')->with($taskMock)->willReturn(
+            $taskDto
+        );
+        $this->assertSame($taskDto, $this->taskService->deleteTask($taskId));
+    }
+
+    public function testDeleteTaskNotFound()
+    {
+        $taskId = 5;
+        $this->repositoryMock->expects(self::once())->method('findTaskById')->with($taskId)->willReturn(null);
+        $this->expectException(TaskNotFoundException::class);
+        $this->taskService->deleteTask($taskId);
+    }
+
+
+    public function testDeleteTaskRepositoryException()
+    {
+        $taskId = 5;
+        $taskMock = $this->getMock(Task::class);
+        $this->repositoryMock->expects(self::once())->method('findTaskById')->with($taskId)->willReturn($taskMock);
+        $this->repositoryMock->expects(self::once())->method('deleteTask')->with($taskMock)->willThrowException(
+            new \Exception()
+        );
+        $this->expectException(CouldNotDeleteException::class);
+        $this->taskService->deleteTask($taskId);
     }
 }
