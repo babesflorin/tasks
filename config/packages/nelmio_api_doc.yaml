@@ -1,10 +1,15 @@
 nelmio_api_doc:
     documentation:
         info:
-            title: My App
-            description: This is an awesome app!
+            title: My Task List App :)
+            description: This is an awesome task list app!
             version: 1.0.0
         definitions:
+            TaskId:
+              type: object
+              properties:
+                id:
+                  type: integer
             TaskRequest:
                 type: object
                 required:
@@ -19,8 +24,9 @@ nelmio_api_doc:
                   when:
                       type: string
                       example: "2020-01-30"
-            TaskResponse:
+            TaskEntity:
               allOf:
+                - $ref: '#/definitions/TaskId'
                 - $ref: '#/definitions/TaskRequest'
                 - type: object
                   properties:
@@ -32,6 +38,24 @@ nelmio_api_doc:
                     updated_at:
                       type: string
                       format: date-time
+            TaskUpdateRequest:
+              allOf:
+                - $ref: '#/definitions/TaskId'
+                - $ref: '#/definitions/TaskRequest'
+
+            TaskResponse:
+              type: object
+              properties:
+                data:
+                  $ref: '#/definitions/TaskEntity'
+
+            MultipleTaskResponse:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                      $ref: '#/definitions/TaskEntity'
 
     areas: # to filter documented areas
         path_patterns:

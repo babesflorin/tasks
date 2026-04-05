@@ -22,6 +22,7 @@ class TaskConverter implements ParamConverterInterface
             throw new HttpException(Response::HTTP_BAD_REQUEST, "Request must be json!");
         }
         $task = new TaskDto();
+        $task->id = $data['id'] ?? null;
         $task->name = $data['name'] ?? '';
         $task->description = $data['description'] ?? '';
         $task->when = $data['when'] ?? '';

@@ -10,11 +10,18 @@ class TaskValidator
     /**
      * @throws InvalidTaskException
      */
-    public function validate(TaskDto $taskDto)
+    public function validate(TaskDto $taskDto, bool $shouldHaveId = false)
     {
         $errors = [];
         if (!is_string($taskDto->name) || empty($taskDto->name)) {
             $errors[] = 'Task name is not valid!';
+        }
+        if ($shouldHaveId) {
+            if (null === $taskDto->id) {
+                $errors[] = 'We need an id to know which entity to update!';
+            } elseif (!is_integer($taskDto->id)) {
+                $errors[] = 'The id must be an integer!';
+            }
         }
 
         if (!is_string($taskDto->description) || empty($taskDto->description)) {

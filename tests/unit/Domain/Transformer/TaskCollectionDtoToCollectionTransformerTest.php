@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Domain\Transformer;
+namespace App\Tests\Unit\Domain\Transformer;
 
 use App\Domain\Dto\TaskCollectionDto;
 use App\Domain\Dto\TaskDto;
@@ -8,7 +8,7 @@ use App\Domain\Entity\Task;
 use App\Domain\Entity\TaskCollection;
 use App\Domain\Transformer\TaskCollectionDtoToCollectionTransformer;
 use App\Domain\Transformer\TaskDtoToEntityTransformer;
-use App\Tests\TestCase;
+use App\Tests\Unit\TestCase;
 
 class TaskCollectionDtoToCollectionTransformerTest extends TestCase
 {
@@ -21,7 +21,7 @@ class TaskCollectionDtoToCollectionTransformerTest extends TestCase
      */
     private $dtoTransformer;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->transformer = $this->getMock(TaskDtoToEntityTransformer::class, ['transform', 'reverseTransform']);

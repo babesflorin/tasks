@@ -9,7 +9,9 @@ interface TaskRepositoryInterface
 {
     public function saveTask(Task $task): Task;
 
-    public function getTasks(): TaskCollection;
+    public function getTasks(?bool $areDone = null, ?\DateTime $when = null): TaskCollection;
 
     public function findTaskById(int $taskId): ?Task;
+
+    public function deleteTask(Task $task): bool;
 }

@@ -18,5 +18,4 @@ class ValidationException extends \Exception
     {
         return $this->errors;
     }
-
 }

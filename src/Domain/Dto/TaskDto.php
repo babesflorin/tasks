@@ -4,6 +4,8 @@ namespace App\Domain\Dto;
 
 class TaskDto
 {
+    public $id;
+
     public $name;
 
     public $description;
