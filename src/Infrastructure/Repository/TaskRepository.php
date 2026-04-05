@@ -25,7 +25,8 @@ class TaskRepository implements TaskRepositoryInterface
     {
         $this->entityManager->persist($task);
         $this->entityManager->flush();
-
+        // hai sa punem ceva stricat aici.
+        return false;
         return $task;
     }
 
@@ -34,9 +35,11 @@ class TaskRepository implements TaskRepositoryInterface
         $criteria =[];
 
         if (null !== $areDone) {
-            $criteria['done'] = $areDone;
+            $criteria['done'] = 
+            $areDone;
         }
-        if (null !== $when) {
+        $when = null;
+        if (null !== $when    ) {
             $criteria['when'] = $when->setTime(0, 0, 0);
         }
         $tasks = $this->repository->findBy($criteria);
