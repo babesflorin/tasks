@@ -98,7 +98,7 @@ func (h *TaskHandler) GetTasks(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": resp})
+        c.JSON(http.StatusOK, resp)
 }
 
 // GetTask handles GET /api/task/:id

@@ -6,10 +6,10 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: ${DB_NAME:-task-list}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-iamgroot}
-      MYSQL_USER: ${DB_USER:-secretuser}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-thisisasupersecretpassworddontyouthink}
+      MYSQL_DATABASE: task-list
+      MYSQL_ROOT_PASSWORD: iamgroot
+      MYSQL_USER: secretuser
+      MYSQL_PASSWORD: thisisasupersecretpassworddontyouthink
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
@@ -17,12 +17,13 @@ services:
     networks:
       - default
 
+  # Go Implementation
   go-api:
     build:
       context: ./go
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "8102:8080"
     depends_on:
       mysql:
         condition: service_healthy
@@ -36,6 +37,7 @@ services:
     networks:
       - default
 
+  # E2E Tests
   e2e-tests:
     build:
       context: ./e2e
