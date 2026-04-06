@@ -1,0 +1,21 @@
+# Git
+.git
+.gitignore
+
+# Build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go workspace file
+go.work
+
+# Temporary files
+*.log
+*.tmp
+*.swp
+*~

@@ -1,43 +1,51 @@
 
 version: "3.3"
 services:
-  builder:
-    build:
-      context: ./
-      dockerfile: docker/build/Dockerfile
-    image: builder:latest
-
-  webserver:
-    build:
-      context: ./
-      dockerfile: docker/nginx/Dockerfile
-    ports:
-      - "${WEBSERVER_PORT}:80"
-    depends_on:
-      - php-fpm
-
-  php-fpm:
-    build:
-      context: ./
-      dockerfile: docker/php-fpm/Dockerfile
-    depends_on:
-      - mysql
-    image: tasklistfpm:latest
-
-  installapp:
-    build:
-      context: ./
-      dockerfile: docker/installapp/Dockerfile
-    depends_on:
-      - mysql
-      - php-fpm
-
   mysql:
     image: mysql:5.7
     ports:
-      - "${DB_PORT}:3306"
+      - "3306:3306"
     environment:
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD} 
+      MYSQL_DATABASE: ${DB_NAME:-task-list}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-iamgroot}
+      MYSQL_USER: ${DB_USER:-secretuser}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-thisisasupersecretpassworddontyouthink}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - default
+
+  go-api:
+    build:
+      context: ./go
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_SERVER: mysql
+      DB_PORT: "3306"
+      DB_NAME: task-list
+      DB_USER: secretuser
+      DB_PASSWORD: thisisasupersecretpassworddontyouthink
+      PORT: "8080"
+    networks:
+      - default
+
+  e2e-tests:
+    build:
+      context: ./e2e
+      dockerfile: Dockerfile
+    depends_on:
+      - go-api
+    environment:
+      BASE_URL: http://go-api:8080/api/task
+    networks:
+      - default
+
+networks:
+  default:
