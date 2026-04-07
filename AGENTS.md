@@ -480,3 +480,40 @@ Located in `src/Domain/Exception/`:
 - Exceptions: 4 (ValidationException, InvalidTaskException, TaskNotFoundException, CouldNotDeleteException)
 - Kernel: 1 (Kernel.php)
 - Migrations: 1 (Version20200308095622.php)
+
+## Cursor Cloud specific instructions
+
+### Environment overview
+
+This is a Symfony 5.0 REST API (PHP 7.4) with Docker-based services (MySQL 5.7, PHP-FPM, Nginx). Tests use SQLite in-memory and do not require Docker.
+
+### Running tests (no Docker needed)
+
+```bash
+cd /workspace && vendor/bin/simple-phpunit
+```
+
+Tests use SQLite via `config/packages/test/doctrine.yaml`, so MySQL is not required.
+
+### Running lint
+
+```bash
+vendor/bin/phpcs --standard=phpcs.xml.dist src/
+```
+
+### Running the application (Docker)
+
+```bash
+sudo docker compose up -d
+sudo docker compose exec php-fpm php bin/console doctrine:schema:update --force
+```
+
+The API is then available at `http://localhost:8101/api/task`. Swagger UI at `http://localhost:8101/api/doc`.
+
+### Gotchas
+
+- The `composer.lock` was generated with Composer 1. Use `composer config --no-plugins allow-plugins.ocramius/package-versions true` and `composer config --no-plugins allow-plugins.symfony/flex true` before `composer install` on Composer 2.
+- The `docker/build/Dockerfile` uses `--ignore-platform-reqs --no-scripts` because the `composer` Docker image ships PHP 8.x+ while the project targets PHP 7.4. The runtime `php-fpm` container uses PHP 7.4.
+- `doctrine:migrations:migrate` may fail due to a Doctrine Migrations version incompatibility (`Undefined class constant 'VERSIONS'`). Use `doctrine:schema:update --force` instead for initial DB setup.
+- No `bin/phpunit` exists; use `vendor/bin/simple-phpunit` which bootstraps PHPUnit 7.5 via the Symfony PHPUnit Bridge.
+- Code coverage requires Xdebug; the "No code coverage driver is available" warning is harmless for running tests.
