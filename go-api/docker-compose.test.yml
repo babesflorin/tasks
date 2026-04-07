@@ -1,0 +1,78 @@
+version: "3.3"
+services:
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: task-list
+      MYSQL_USER: secretuser
+      MYSQL_PASSWORD: thisisasupersecretpassworddontyouthink
+      MYSQL_ROOT_PASSWORD: iamgroot
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # PHP stack (nginx -> php-fpm -> mysql)
+  php-webserver:
+    build:
+      context: ../
+      dockerfile: docker/nginx/Dockerfile
+    ports:
+      - "8081:80"
+    depends_on:
+      - php-fpm
+
+  php-fpm:
+    build:
+      context: ../
+      dockerfile: docker/php-fpm/Dockerfile
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "mysql://secretuser:thisisasupersecretpassworddontyouthink@mysql:3306/task-list?serverVersion=5.7"
+
+  php-installapp:
+    build:
+      context: ../
+      dockerfile: docker/installapp/Dockerfile
+    depends_on:
+      - mysql
+      - php-fpm
+
+  # Go API
+  go-api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8082:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_SERVER: mysql
+      DB_PORT: "3306"
+      DB_NAME: task-list
+      DB_USER: secretuser
+      DB_PASSWORD: thisisasupersecretpassworddontyouthink
+      APP_PORT: "8080"
+
+  # Parity test runner
+  test-runner:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.test
+    depends_on:
+      - php-webserver
+      - go-api
+    environment:
+      PHP_BASE_URL: "http://php-webserver:80"
+      GO_BASE_URL: "http://go-api:8080"
+      DB_SERVER: mysql
+      DB_PORT: "3306"
+      DB_NAME: task-list
+      DB_USER: secretuser
+      DB_PASSWORD: thisisasupersecretpassworddontyouthink
+    command: ["go", "test", "-v", "-count=1", "./tests/parity/..."]

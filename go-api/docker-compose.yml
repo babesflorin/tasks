@@ -1,0 +1,33 @@
+version: "3.3"
+services:
+  mysql:
+    image: mysql:5.7
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: task-list
+      MYSQL_USER: secretuser
+      MYSQL_PASSWORD: thisisasupersecretpassworddontyouthink
+      MYSQL_ROOT_PASSWORD: iamgroot
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  go-api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_SERVER: mysql
+      DB_PORT: "3306"
+      DB_NAME: task-list
+      DB_USER: secretuser
+      DB_PASSWORD: thisisasupersecretpassworddontyouthink
+      APP_PORT: "8080"

@@ -1,0 +1,29 @@
+version: "3.3"
+services:
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: task-list-test
+      MYSQL_USER: secretuser
+      MYSQL_PASSWORD: thisisasupersecretpassworddontyouthink
+      MYSQL_ROOT_PASSWORD: iamgroot
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  go-e2e-tests:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.test
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_SERVER: mysql
+      DB_PORT: "3306"
+      DB_NAME: task-list-test
+      DB_USER: secretuser
+      DB_PASSWORD: thisisasupersecretpassworddontyouthink
+    command: ["go", "test", "-v", "-count=1", "./tests/e2e/..."]
