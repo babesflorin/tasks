@@ -26,16 +26,21 @@ func TestParity_AllEndpoints(t *testing.T) {
 
 	for _, tc := range matrix {
 		t.Run(tc.Name, func(t *testing.T) {
-			// Seed shared DB before each test
-			truncateAll(t, db)
-			seedFixtures(t, db)
-
 			// Build identical request body
 			body, err := buildRequestBody(tc)
 			require.NoError(t, err)
 
+			// Seed fresh DB before PHP request
+			truncateAll(t, db)
+			seedFixtures(t, db)
+
 			// Execute against PHP
 			phpResp, phpBody := executeHTTPRequest(t, phpURL, tc.Method, tc.Path, body)
+
+			// Seed fresh DB again before Go request (so side effects from PHP don't affect Go)
+			truncateAll(t, db)
+			seedFixtures(t, db)
+
 			// Execute against Go
 			goResp, goBody := executeHTTPRequest(t, goURL, tc.Method, tc.Path, body)
 
