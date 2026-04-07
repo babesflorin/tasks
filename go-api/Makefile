@@ -30,13 +30,21 @@ test-php:
 		php vendor/bin/simple-phpunit --testsuite UnitTests
 
 # Parity: both PHP and Go APIs share same MySQL, compare responses
-# This target uses host networking. Requires manual setup of MySQL, PHP, and Go containers.
+# Generates REPORT.md with detailed request/response comparison data.
 # See docker-compose.test.yml for the full service definitions.
 test-parity:
 	sudo docker compose -f docker-compose.test.yml up -d --build
 	@echo "Waiting for all services to be ready..."
 	@sleep 20
-	sudo docker compose -f docker-compose.test.yml run --rm test-runner
+	@mkdir -p $(PWD)/reports
+	sudo docker compose -f docker-compose.test.yml run --rm \
+		-v $(PWD)/reports:/reports \
+		-e PARITY_REPORT_PATH=/reports/REPORT.md \
+		test-runner
+	@if [ -f $(PWD)/reports/REPORT.md ]; then \
+		cp $(PWD)/reports/REPORT.md $(PWD)/REPORT.md; \
+		echo ""; echo "=== Parity report written to REPORT.md ==="; \
+	fi
 	sudo docker compose -f docker-compose.test.yml down -v
 
 # Run all test suites

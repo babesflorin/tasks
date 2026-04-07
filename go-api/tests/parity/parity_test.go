@@ -9,8 +9,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// reportPath is where the parity report is written.
+// Can be overridden via PARITY_REPORT_PATH env var.
+func getReportPath() string {
+	if p := os.Getenv("PARITY_REPORT_PATH"); p != "" {
+		return p
+	}
+	// Try local path first, fall back to /app for Docker
+	if _, err := os.Stat("tests/fixtures"); err == nil {
+		return "REPORT.md"
+	}
+	return "/app/REPORT.md"
+}
+
 // TestParity_AllEndpoints loads the parity matrix and sends identical requests
 // to both the PHP and Go APIs, comparing their responses.
+// After all tests complete, it writes a detailed REPORT.md.
 func TestParity_AllEndpoints(t *testing.T) {
 	phpURL := os.Getenv("PHP_BASE_URL")
 	goURL := os.Getenv("GO_BASE_URL")
@@ -23,6 +37,17 @@ func TestParity_AllEndpoints(t *testing.T) {
 	defer db.Close()
 
 	matrix := loadParityMatrix(t)
+	report := NewReport()
+
+	// Write report after all subtests finish, regardless of pass/fail
+	t.Cleanup(func() {
+		reportPath := getReportPath()
+		if err := report.WriteMarkdown(reportPath); err != nil {
+			t.Logf("WARNING: failed to write parity report to %s: %v", reportPath, err)
+		} else {
+			t.Logf("Parity report written to %s", reportPath)
+		}
+	})
 
 	for _, tc := range matrix {
 		t.Run(tc.Name, func(t *testing.T) {
@@ -44,6 +69,40 @@ func TestParity_AllEndpoints(t *testing.T) {
 			// Execute against Go
 			goResp, goBody := executeHTTPRequest(t, goURL, tc.Method, tc.Path, body)
 
+			// Determine match
+			statusMatch := phpResp.StatusCode == goResp.StatusCode
+
+			normalizedPHP := normalizeJSON(t, phpBody, tc.IgnoreFields)
+			normalizedGo := normalizeJSON(t, goBody, tc.IgnoreFields)
+			bodyMatch := jsonEqual(normalizedPHP, normalizedGo)
+
+			match := statusMatch && bodyMatch
+
+			// Build notes for any mismatches
+			var notes []string
+			if !statusMatch {
+				notes = append(notes, "Status code mismatch")
+			}
+			if !bodyMatch {
+				notes = append(notes, "Response body mismatch (after normalization)")
+			}
+
+			// Record in report
+			report.Add(ReportEntry{
+				TestName:       tc.Name,
+				Method:         tc.Method,
+				Path:           tc.Path,
+				RequestBody:    body,
+				PHPStatus:      phpResp.StatusCode,
+				PHPBody:        phpBody,
+				PHPContentType: phpResp.Header.Get("Content-Type"),
+				GoStatus:       goResp.StatusCode,
+				GoBody:         goBody,
+				GoContentType:  goResp.Header.Get("Content-Type"),
+				Match:          match,
+				Notes:          strings.Join(notes, "; "),
+			})
+
 			// 1. Status code parity
 			assert.Equal(t, phpResp.StatusCode, goResp.StatusCode,
 				"status code mismatch for %s %s\nPHP body: %s\nGo body: %s",
@@ -53,7 +112,6 @@ func TestParity_AllEndpoints(t *testing.T) {
 			for _, h := range tc.ParityHeaders {
 				phpHeader := phpResp.Header.Get(h)
 				goHeader := goResp.Header.Get(h)
-				// Normalize: both should contain "application/json"
 				assert.True(t,
 					strings.Contains(phpHeader, "json") == strings.Contains(goHeader, "json"),
 					"header %s mismatch: PHP=%q Go=%q", h, phpHeader, goHeader)
@@ -61,8 +119,6 @@ func TestParity_AllEndpoints(t *testing.T) {
 
 			// 3. Body parity
 			if tc.StrictBodyParity {
-				normalizedPHP := normalizeJSON(t, phpBody, tc.IgnoreFields)
-				normalizedGo := normalizeJSON(t, goBody, tc.IgnoreFields)
 				assert.JSONEq(t, normalizedPHP, normalizedGo,
 					"body mismatch for %s %s\nPHP (normalized): %s\nGo  (normalized): %s",
 					tc.Method, tc.Path, normalizedPHP, normalizedGo)
@@ -78,7 +134,6 @@ func TestParity_CoverageCompleteness(t *testing.T) {
 	routes := loadRouteInventory(t)
 
 	// Build set of covered routes from the parity matrix.
-	// Normalize paths: replace actual IDs with {taskId} pattern.
 	coveredRoutes := map[string]bool{}
 	for _, tc := range matrix {
 		key := tc.Method + " " + normalizePath(tc.Path)

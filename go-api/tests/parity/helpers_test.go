@@ -194,6 +194,20 @@ func removeFields(obj interface{}, fields []string) {
 	}
 }
 
+// jsonEqual compares two JSON strings for structural equality (order-insensitive).
+func jsonEqual(a, b string) bool {
+	var objA, objB interface{}
+	if err := json.Unmarshal([]byte(a), &objA); err != nil {
+		return a == b
+	}
+	if err := json.Unmarshal([]byte(b), &objB); err != nil {
+		return a == b
+	}
+	normA, _ := json.Marshal(objA)
+	normB, _ := json.Marshal(objB)
+	return string(normA) == string(normB)
+}
+
 func getEnvOrDefault(key, fallback string) string {
 	if val := os.Getenv(key); val != "" {
 		return val
