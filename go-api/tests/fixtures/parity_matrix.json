@@ -1,0 +1,122 @@
+[
+  {
+    "name": "GET /api/task/1 — happy path",
+    "method": "GET",
+    "path": "/api/task/1",
+    "body": null,
+    "expected_status": 200,
+    "parity_headers": ["Content-Type"],
+    "strict_body_parity": true,
+    "ignore_fields": ["created_at", "updated_at"]
+  },
+  {
+    "name": "GET /api/task/9999999 — not found",
+    "method": "GET",
+    "path": "/api/task/9999999",
+    "body": null,
+    "expected_status": 404,
+    "parity_headers": ["Content-Type"],
+    "strict_body_parity": true,
+    "ignore_fields": []
+  },
+  {
+    "name": "POST /api/task — create task",
+    "method": "POST",
+    "path": "/api/task",
+    "body": {"name": "Parity task", "description": "Parity description", "when": "FUTURE_DATE_5"},
+    "expected_status": 200,
+    "parity_headers": ["Content-Type"],
+    "strict_body_parity": true,
+    "ignore_fields": ["id", "created_at", "updated_at"]
+  },
+  {
+    "name": "PUT /api/task — update task",
+    "method": "PUT",
+    "path": "/api/task",
+    "body": {"id": 2, "name": "Updated name", "description": "Updated desc", "when": "FUTURE_DATE_3"},
+    "expected_status": 200,
+    "parity_headers": ["Content-Type"],
+    "strict_body_parity": true,
+    "ignore_fields": ["created_at", "updated_at"]
+  },
+  {
+    "name": "PUT /api/task — update not found",
+    "method": "PUT",
+    "path": "/api/task",
+    "body": {"id": 9999999, "name": "x", "description": "x", "when": "FUTURE_DATE_3"},
+    "expected_status": 404,
+    "parity_headers": ["Content-Type"],
+    "strict_body_parity": true,
+    "ignore_fields": []
+  },
+  {
+    "name": "PUT /api/task — validation error (empty body)",
+    "method": "PUT",
+    "path": "/api/task",
+    "body": {},
+    "expected_status": 400,
+    "parity_headers": ["Content-Type"],
+    "strict_body_parity": true,
+    "ignore_fields": []
+  },
+  {
+    "name": "PUT /api/task — invalid JSON",
+    "method": "PUT",
+    "path": "/api/task",
+    "body_raw": "/",
+    "expected_status": 400,
+    "parity_headers": ["Content-Type"],
+    "strict_body_parity": true,
+    "ignore_fields": []
+  },
+  {
+    "name": "GET /api/task — list all tasks",
+    "method": "GET",
+    "path": "/api/task",
+    "body": null,
+    "expected_status": 200,
+    "parity_headers": ["Content-Type"],
+    "strict_body_parity": true,
+    "ignore_fields": ["created_at", "updated_at"]
+  },
+  {
+    "name": "PUT /api/task/1/complete — complete task",
+    "method": "PUT",
+    "path": "/api/task/1/complete",
+    "body": null,
+    "expected_status": 200,
+    "parity_headers": ["Content-Type"],
+    "strict_body_parity": true,
+    "ignore_fields": ["created_at", "updated_at"]
+  },
+  {
+    "name": "PUT /api/task/9999999/complete — complete not found",
+    "method": "PUT",
+    "path": "/api/task/9999999/complete",
+    "body": null,
+    "expected_status": 404,
+    "parity_headers": ["Content-Type"],
+    "strict_body_parity": true,
+    "ignore_fields": []
+  },
+  {
+    "name": "DELETE /api/task/5 — delete task",
+    "method": "DELETE",
+    "path": "/api/task/5",
+    "body": null,
+    "expected_status": 200,
+    "parity_headers": ["Content-Type"],
+    "strict_body_parity": true,
+    "ignore_fields": ["created_at", "updated_at"]
+  },
+  {
+    "name": "DELETE /api/task/9999 — delete not found",
+    "method": "DELETE",
+    "path": "/api/task/9999",
+    "body": null,
+    "expected_status": 404,
+    "parity_headers": ["Content-Type"],
+    "strict_body_parity": true,
+    "ignore_fields": []
+  }
+]

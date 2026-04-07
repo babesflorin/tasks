@@ -2,8 +2,7 @@ version: "3.3"
 services:
   mysql:
     image: mysql:5.7
-    ports:
-      - "3306:3306"
+    network_mode: host
     environment:
       MYSQL_DATABASE: task-list
       MYSQL_USER: secretuser
@@ -19,13 +18,12 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    ports:
-      - "8080:8080"
+    network_mode: host
     depends_on:
       mysql:
         condition: service_healthy
     environment:
-      DB_SERVER: mysql
+      DB_SERVER: "127.0.0.1"
       DB_PORT: "3306"
       DB_NAME: task-list
       DB_USER: secretuser
