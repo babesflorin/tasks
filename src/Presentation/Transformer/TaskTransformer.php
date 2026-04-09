@@ -16,7 +16,7 @@ class TaskTransformer extends TransformerAbstract
             'when' => $taskDto->when,
             'done' => (bool)$taskDto->done,
             'created_at' => $taskDto->createdAt,
-            'updated_at' => $taskDto->createdAt,
+            'updated_at' => $taskDto->updatedAt,
         ];
     }
 }

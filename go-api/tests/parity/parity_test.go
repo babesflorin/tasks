@@ -1,0 +1,168 @@
+package parity
+
+import (
+	"os"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+// reportPath is where the parity report is written.
+// Can be overridden via PARITY_REPORT_PATH env var.
+func getReportPath() string {
+	if p := os.Getenv("PARITY_REPORT_PATH"); p != "" {
+		return p
+	}
+	// Try local path first, fall back to /app for Docker
+	if _, err := os.Stat("tests/fixtures"); err == nil {
+		return "REPORT.md"
+	}
+	return "/app/REPORT.md"
+}
+
+// TestParity_AllEndpoints loads the parity matrix and sends identical requests
+// to both the PHP and Go APIs, comparing their responses.
+// After all tests complete, it writes a detailed REPORT.md.
+func TestParity_AllEndpoints(t *testing.T) {
+	phpURL := os.Getenv("PHP_BASE_URL")
+	goURL := os.Getenv("GO_BASE_URL")
+
+	if phpURL == "" || goURL == "" {
+		t.Skip("PHP_BASE_URL and GO_BASE_URL must be set for parity tests")
+	}
+
+	db := connectDB(t)
+	defer db.Close()
+
+	matrix := loadParityMatrix(t)
+	report := NewReport()
+
+	// Write report after all subtests finish, regardless of pass/fail
+	t.Cleanup(func() {
+		reportPath := getReportPath()
+		if err := report.WriteMarkdown(reportPath); err != nil {
+			t.Logf("WARNING: failed to write parity report to %s: %v", reportPath, err)
+		} else {
+			t.Logf("Parity report written to %s", reportPath)
+		}
+	})
+
+	for _, tc := range matrix {
+		t.Run(tc.Name, func(t *testing.T) {
+			// Build identical request body
+			body, err := buildRequestBody(tc)
+			require.NoError(t, err)
+
+			// Seed fresh DB before PHP request
+			truncateAll(t, db)
+			seedFixtures(t, db)
+
+			// Execute against PHP
+			phpResp, phpBody := executeHTTPRequest(t, phpURL, tc.Method, tc.Path, body)
+
+			// Seed fresh DB again before Go request (so side effects from PHP don't affect Go)
+			truncateAll(t, db)
+			seedFixtures(t, db)
+
+			// Execute against Go
+			goResp, goBody := executeHTTPRequest(t, goURL, tc.Method, tc.Path, body)
+
+			// Determine match
+			statusMatch := phpResp.StatusCode == goResp.StatusCode
+
+			normalizedPHP := normalizeJSON(t, phpBody, tc.IgnoreFields)
+			normalizedGo := normalizeJSON(t, goBody, tc.IgnoreFields)
+			bodyMatch := jsonEqual(normalizedPHP, normalizedGo)
+
+			match := statusMatch && bodyMatch
+
+			// Build notes for any mismatches
+			var notes []string
+			if !statusMatch {
+				notes = append(notes, "Status code mismatch")
+			}
+			if !bodyMatch {
+				notes = append(notes, "Response body mismatch (after normalization)")
+			}
+
+			// Record in report
+			report.Add(ReportEntry{
+				TestName:       tc.Name,
+				Method:         tc.Method,
+				Path:           tc.Path,
+				RequestBody:    body,
+				PHPStatus:      phpResp.StatusCode,
+				PHPBody:        phpBody,
+				PHPContentType: phpResp.Header.Get("Content-Type"),
+				GoStatus:       goResp.StatusCode,
+				GoBody:         goBody,
+				GoContentType:  goResp.Header.Get("Content-Type"),
+				Match:          match,
+				Notes:          strings.Join(notes, "; "),
+			})
+
+			// 1. Status code parity
+			assert.Equal(t, phpResp.StatusCode, goResp.StatusCode,
+				"status code mismatch for %s %s\nPHP body: %s\nGo body: %s",
+				tc.Method, tc.Path, phpBody, goBody)
+
+			// 2. Header parity
+			for _, h := range tc.ParityHeaders {
+				phpHeader := phpResp.Header.Get(h)
+				goHeader := goResp.Header.Get(h)
+				assert.True(t,
+					strings.Contains(phpHeader, "json") == strings.Contains(goHeader, "json"),
+					"header %s mismatch: PHP=%q Go=%q", h, phpHeader, goHeader)
+			}
+
+			// 3. Body parity
+			if tc.StrictBodyParity {
+				assert.JSONEq(t, normalizedPHP, normalizedGo,
+					"body mismatch for %s %s\nPHP (normalized): %s\nGo  (normalized): %s",
+					tc.Method, tc.Path, normalizedPHP, normalizedGo)
+			}
+		})
+	}
+}
+
+// TestParity_CoverageCompleteness verifies that every route in the route inventory
+// has at least one parity test case in the parity matrix.
+func TestParity_CoverageCompleteness(t *testing.T) {
+	matrix := loadParityMatrix(t)
+	routes := loadRouteInventory(t)
+
+	// Build set of covered routes from the parity matrix.
+	coveredRoutes := map[string]bool{}
+	for _, tc := range matrix {
+		key := tc.Method + " " + normalizePath(tc.Path)
+		coveredRoutes[key] = true
+	}
+
+	for _, r := range routes {
+		key := r.Method + " " + r.Path
+		assert.True(t, coveredRoutes[key],
+			"route %s has no parity test", key)
+	}
+}
+
+// normalizePath replaces numeric path segments with {taskId} for route matching.
+func normalizePath(path string) string {
+	parts := strings.Split(path, "/")
+	for i, part := range parts {
+		if isNumeric(part) {
+			parts[i] = "{taskId}"
+		}
+	}
+	return strings.Join(parts, "/")
+}
+
+func isNumeric(s string) bool {
+	for _, c := range s {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return len(s) > 0
+}

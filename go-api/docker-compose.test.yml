@@ -1,0 +1,83 @@
+version: "3.3"
+services:
+  mysql:
+    image: mysql:5.7
+    network_mode: host
+    environment:
+      MYSQL_DATABASE: task-list
+      MYSQL_USER: secretuser
+      MYSQL_PASSWORD: thisisasupersecretpassworddontyouthink
+      MYSQL_ROOT_PASSWORD: iamgroot
+      MYSQL_TCP_PORT: "3308"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--port=3308"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # PHP stack — nginx + php-fpm, both on host network
+  php-fpm:
+    build:
+      context: ../
+      dockerfile: docker/php-fpm/Dockerfile
+    network_mode: host
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "mysql://secretuser:thisisasupersecretpassworddontyouthink@127.0.0.1:3308/task-list?serverVersion=5.7"
+
+  php-webserver:
+    build:
+      context: ../
+      dockerfile: docker/nginx/Dockerfile
+    network_mode: host
+    depends_on:
+      - php-fpm
+
+  php-installapp:
+    build:
+      context: ../
+      dockerfile: docker/installapp/Dockerfile
+    network_mode: host
+    depends_on:
+      - mysql
+      - php-fpm
+    environment:
+      DATABASE_URL: "mysql://secretuser:thisisasupersecretpassworddontyouthink@127.0.0.1:3308/task-list?serverVersion=5.7"
+
+  # Go API on port 8082
+  go-api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    network_mode: host
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_SERVER: "127.0.0.1"
+      DB_PORT: "3308"
+      DB_NAME: task-list
+      DB_USER: secretuser
+      DB_PASSWORD: thisisasupersecretpassworddontyouthink
+      APP_PORT: "8082"
+
+  # Parity test runner
+  test-runner:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.test
+    network_mode: host
+    depends_on:
+      - php-webserver
+      - go-api
+    environment:
+      PHP_BASE_URL: "http://127.0.0.1:80"
+      GO_BASE_URL: "http://127.0.0.1:8082"
+      DB_SERVER: "127.0.0.1"
+      DB_PORT: "3308"
+      DB_NAME: task-list
+      DB_USER: secretuser
+      DB_PASSWORD: thisisasupersecretpassworddontyouthink
+    command: ["go", "test", "-v", "-count=1", "./tests/parity/..."]

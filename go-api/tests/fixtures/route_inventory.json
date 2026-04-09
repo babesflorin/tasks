@@ -1,0 +1,8 @@
+[
+  {"method": "POST", "path": "/api/task"},
+  {"method": "GET", "path": "/api/task"},
+  {"method": "GET", "path": "/api/task/{taskId}"},
+  {"method": "PUT", "path": "/api/task"},
+  {"method": "PUT", "path": "/api/task/{taskId}/complete"},
+  {"method": "DELETE", "path": "/api/task/{taskId}"}
+]
