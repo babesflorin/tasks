@@ -165,7 +165,7 @@ Auto-generate a `REPORT.md` after parity tests containing:
 
 ---
 
-## Phase 7 — Makefile & CI
+## Phase 7 — Makefile
 
 ```makefile
 test-e2e:     # Go E2E tests in Docker against real DB
@@ -175,7 +175,7 @@ test-all:     # All three suites
 clean:        # Tear down all Docker resources
 ```
 
-GitHub Actions workflow running all three test suites.
+Integrate with the project's existing CI/CD pipeline (Travis CI, GitLab CI, Jenkins, etc.).
 
 ---
 

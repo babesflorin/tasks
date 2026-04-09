@@ -244,13 +244,6 @@ The test cases are defined in [`tests/fixtures/parity_matrix.json`](tests/fixtur
 | `DB_PASSWORD` | `thisisasupersecretpassworddontyouthink` | MySQL password |
 | `PARITY_REPORT_PATH` | `REPORT.md` | Path to write the parity report |
 
-## CI/CD
-
-The GitHub Actions workflow (`.github/workflows/parity.yml`) runs:
-1. **Go E2E tests** — verifies Go endpoints work
-2. **PHP tests** — verifies PHP still works after bug fixes
-3. **Parity tests** — verifies PHP and Go produce identical responses
-
 ## Clean Up
 
 ```bash
